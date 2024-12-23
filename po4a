@@ -2045,15 +2045,8 @@ if ( not $po4a_opts{"no-translations"} ) {
             $doc->{TT}{po_in} = $po;
             $doc->{TT}{po_in}->stats_clear();
 
-            my ( undef, $translation_out ) = File::Temp::tempfile(
-                basename($document{$master}{$lang}) . ".new-XXXX",
-                OPEN   => 0,
-                UNLINK => 0
-                );
-
             $doc->process(
                 'file_in_name'     => \@file_in_name,
-                'file_out_name'    => $translation_out,
                 'file_in_charset'  => $file_opts{"mastchar"},
                 'file_out_charset' => $file_opts{"locchar"},
                 'addendum_charset' => $file_opts{"addchar"},
@@ -2061,7 +2054,6 @@ if ( not $po4a_opts{"no-translations"} ) {
                 'destdir'          => $po4a_opts{"destdir"},
                 'calldir'          => $po4a_opts{"calldir"}
             );
-            unlink( find_output_file($translation_out) );
 
             my ( $percent, $hit, $queries ) = $doc->stats();
             if ( $percent < $file_opts{"threshold"} ) {
@@ -2120,6 +2112,12 @@ if ( not $po4a_opts{"no-translations"} ) {
 
             my $target_file =  find_output_file( $document{$master}{$lang});
             if ( -e $target_file ) {
+                my ( undef, $translation_out ) = File::Temp::tempfile(
+                    basename($document{$master}{$lang}) . ".new-XXXX",
+                    OPEN   => 0,
+                    UNLINK => 0
+                    );
+
                 $doc->write( $translation_out, $file_opts{"locchar"} // '' );
                 if ( compare( $translation_out, $target_file ) ) {
                     rename( $translation_out, $target_file );
